@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Quiz d'une vraie gourmande</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout : un ticket de commande de cuisine, une question par écran, colonne unique étroite. */
+:root {
+  --bg: #F3EEF7;
+  --surface: #FFFFFF;
+  --ink: #2A1238;
+  --muted: #6B5578;
+  --accent: #6B2FA0;
+  --butter: #F6D04D;
+  --on-butter: #2A1238;
+  --line: #D9CCE3;
+  --ok: #1F7A4D;
+  --no: #B3261E;
+  --display: "Bagel Fat One", "Arial Black", Impact, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "DM Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1C0D26; --surface: #2A1638; --ink: #F4ECF9; --muted: #B9A6C6;
+    --accent: #C79BF2; --butter: #F6D04D; --on-butter: #2A1238; --line: #45295A;
+    --ok: #6FD9A0; --no: #FF8A80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1C0D26; --surface: #2A1638; --ink: #F4ECF9; --muted: #B9A6C6;
+  --accent: #C79BF2; --butter: #F6D04D; --on-butter: #2A1238; --line: #45295A;
+  --ok: #6FD9A0; --no: #FF8A80; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 17px; line-height: 1.5;
+  padding-block: 28px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.mono { font-family: var(--mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1, h2 { font-family: var(--display); font-weight: 400; line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(44px, 13vw, 72px); color: var(--accent); }
+h2 { font-size: clamp(26px, 7vw, 34px); }
+p { margin: 0; }
+
+.ticket {
+  background: var(--surface); border: 1.5px dashed var(--line); border-radius: 6px;
+  padding: 24px 20px; display: flex; flex-direction: column; gap: 20px;
+}
+.head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.bar { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; }
+.bar i { height: 5px; background: var(--line); border-radius: 2px; }
+.bar i.on { background: var(--accent); }
+
+.duel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.frame { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.pic {
+  aspect-ratio: 4 / 5; max-width: 100%; border: 1.5px solid var(--ink); border-radius: 4px; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 10px;
+  background: repeating-linear-gradient(135deg, transparent 0 10px, var(--line) 10px 11px);
+}
+.pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pic.has { padding: 0; background: var(--surface); }
+.pic b { font-family: var(--display); font-weight: 400; font-size: 44px; line-height: 1; color: var(--accent); }
+.pic span { font-family: var(--mono); font-size: 11.5px; color: var(--muted); background: var(--surface); padding: 2px 6px; }
+
+.choices { display: flex; flex-direction: column; gap: 10px; }
+.choice {
+  display: flex; gap: 12px; align-items: baseline; width: 100%; text-align: left;
+  font: inherit; color: var(--ink); background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: 4px; padding: 13px 14px; cursor: pointer;
+}
+.choice:hover:not(:disabled) { border-color: var(--accent); }
+.choice:focus-visible, .btn:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.choice .k { font-family: var(--mono); font-size: 13px; color: var(--muted); flex: none; }
+.choice:disabled { cursor: default; opacity: .55; }
+.choice.picked { opacity: 1; border-width: 2px; }
+.choice.picked.ok { border-color: var(--ok); }
+.choice.picked.no { border-color: var(--no); }
+
+.verdict { border-left: 3px solid var(--butter); padding: 4px 0 4px 12px; display: flex; flex-direction: column; gap: 2px; }
+.verdict .tag { font-family: var(--mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; }
+.verdict .tag.ok { color: var(--ok); }
+.verdict .tag.no { color: var(--no); }
+
+.btn {
+  font-family: var(--body); font-weight: 700; font-size: 17px; cursor: pointer;
+  background: var(--butter); color: var(--on-butter); border: 1.5px solid var(--on-butter);
+  border-radius: 4px; padding: 13px 20px; align-self: flex-start;
+}
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 600; }
+.btn:disabled { opacity: .45; cursor: default; }
+textarea {
+  width: 100%; min-height: 110px; font: inherit; color: var(--ink); background: var(--bg);
+  border: 1.5px solid var(--line); border-radius: 4px; padding: 12px; resize: vertical;
+}
+.score { font-family: var(--display); font-size: clamp(64px, 20vw, 104px); line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.bon { border: 2px dashed var(--ink); border-radius: 6px; padding: 18px; background: var(--butter); color: var(--on-butter); display: flex; flex-direction: column; gap: 8px; }
+.bon .mono { color: var(--on-butter); }
+.bon h2 { font-size: 26px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.chip { font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; background: transparent; color: var(--on-butter); border: 1.5px solid var(--on-butter); border-radius: 999px; padding: 7px 13px; }
+.chip[aria-pressed="true"] { background: var(--on-butter); color: var(--butter); }
+.chip:focus-visible { outline: 3px solid var(--on-butter); outline-offset: 2px; }
+.recap { font-family: var(--mono); font-size: 13.5px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 4px; padding: 12px; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
+@media (prefers-reduced-motion: no-preference) {
+  .ticket { animation: in .28s ease-out; }
+  @keyframes in { from { transform: translateY(8px); } to { transform: none; } }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <section id="intro" class="ticket">
+    <h1>Quiz d'une vraie gourmande</h1>
+    <p>21 questions, es-tu vraiment la gourmande que tu penses être baby ?</p>
+    <button class="btn" id="start" type="button">Commencer</button>
+  </section>
+
+  <section id="quiz" class="ticket" hidden>
+    <div class="head mono"><span id="num"></span><span id="pts"></span></div>
+    <div class="bar" id="bar" aria-hidden="true"></div>
+    <p class="mono">Cuisinier n°1 : Jungkook · Cuisinier n°2 : Maï</p>
+    <h2 id="q"></h2>
+    <div class="duel" id="duel" hidden></div>
+    <div class="choices" id="choices"></div>
+    <div id="free" hidden>
+      <label class="mono" for="answer">Ta réponse</label>
+      <textarea id="answer" placeholder="Écris ce que tu veux lui dire"></textarea>
+    </div>
+    <div class="verdict" id="verdict" hidden><span class="tag" id="vtag"></span><span id="vtext"></span></div>
+    <div class="row">
+      <button class="btn ghost" id="back" type="button" hidden>Question précédente</button>
+      <button class="btn" id="next" type="button" hidden>Question suivante</button>
+    </div>
+  </section>
+
+  <section id="end" class="ticket" hidden>
+    <p class="mono">Addition</p>
+    <div class="score" id="score"></div>
+    <h2 id="title"></h2>
+    <p id="blurb"></p>
+    <div class="bon">
+      <p class="mono">Bon n° 0001 · valable une fois</p>
+      <h2>Bon pour une performance exclusive</h2>
+      <p>De la part du jeune cuisinier n°2. Choisis la tienne :</p>
+      <div class="row" id="perfs"></div>
+    </div>
+    <p>Envoie ton résultat au jeune cuisinier n°2 :</p>
+    <div class="recap" id="recap"></div>
+    <div class="row">
+      <button class="btn" id="copy" type="button">Copier mon résultat</button>
+      <button class="btn ghost" id="again" type="button">Recommencer</button>
+      <span class="mono" id="copied" role="status"></span>
+    </div>
+  </section>
+</div>
+
+<script>
+// Photos : deposer dans le dossier photos/ un fichier nomme qst<numero>_cuis<1 ou 2>.jpg
+// (ex. photos/qst4_cuis1.jpg). Le quiz les detecte seul, aucun code a modifier.
+var PHOTOS = {};
+var EXT = ["jpg", "jpeg", "png", "webp"];
+
+// ok : indices des réponses acceptées par le jury. Sans "ok", toute réponse rapporte le point.
+var Q = [
+  { q: "Quelle est la date de naissance du jeune cuisinier ?", c: ["1er septembre 1997", "13 juin 1997", "30 décembre 1995"], ok: [0], y: "Exact. Tu connais ton dossier.", n: "Raté : 1er septembre 1997." },
+  { q: "À quel très célèbre boys band coréen Jungkook appartient-il ?", c: ["BTS", "Derrière la scène", "Les trois brigands"], ok: [0], y: "Évidemment.", n: "C'était BTS. Le jury est inquiet." },
+  { q: "Combien d'albums Jungkook a-t-il sortis en solo ?", c: ["Un", "Trois", "Sept"], ok: [0], y: "Un seul, Golden.", n: "Un seul : Golden." },
+  { q: "Qui des deux est le jeune cuisinier le plus séduisant ?", c: ["Celui de gauche", "Celui de droite"], ok: [1], y: "Réponse correcte, le jury est incorruptible.", n: "Réponse refusée. Le jury est incorruptible." },
+  { q: "Lequel des deux chante le mieux ?", c: ["Le premier", "Le premier", "Le premier"], y: "seule et unique fois où le numéro 2 concède cette manche" },
+  { q: "Qui est le vrai lesbian Jungkook ?", c: ["Le premier", "Le second"], ok: [1], y: "c pas moi qui decide desoley", n: "c pas moi qui decide desoley" },
+  { q: "Lequel des deux a les plus beaux muscles sur cette photo ?", c: ["Le premier", "Le second"], ok: [1], y: "des mois à la salle pour cette question stp", n: "des mois à la salle pour cette question stp" },
+  { q: "Lequel des deux connaît l'existence de la personne faisant ce quiz ?", c: ["Le premier", "Le second"], ok: [1], y: "et le cuisinier remercie le seigneur tous les jours", n: "je suis au regret de t'annoncer que ..." },
+  { q: "Lequel des deux répond à tes messages ?", c: ["Le premier (délai moyen : jamais)", "Le second (délai moyen : embarrassant de rapidité)"], ok: [1], y: "pas de place pour la nonchalance!!!", n: "stp sofia..." },
+  { q: "Lequel a des millions de fans, et lequel n'en veut qu'une seule ?", c: ["Le premier a les millions, le second n'en veut qu'une", "L'inverse"], ok: [0], y: "oui surtout si elle les eclate toutes une par une au bras de fer", n: "Réponse refusée par le jury." },
+  { q: "Quel est le plat préféré du jeune cuisinier n°2 ?", c: ["Le thieb", "Le tajine marocain", "Toi"], ok: [2], y: "Le jury s'excuse pour cette réponse.", n: "mauvaise reponse" },
+  { q: "Lequel se souvient que Sofia ne boit que du lait d'avoine ? Attention, question piège.", c: ["Le premier", "Le second"], ok: [0], y: "hein", n: "Piège : le second a oublié. Je te promets, ça n'arrivera plus bb." },
+  { q: "Lequel a passé une soirée entière à fabriquer ce quiz au lieu de réviser pour ses partiels ?", c: ["Le premier", "Le second"], ok: [1], y: "le sens des priorités bb", n: "mais il va meme pas à l'ecole lui" },
+  { q: "Lequel des deux pense à toi en ce moment ?", c: ["Le premier (statistiquement improbable)", "Le second (statistiquement certain)"], ok: [1], y: "J'ai calculé la probabilité tkt.", n: "C'était le second. J'ai calculé la probabilité tkt." },
+  { q: "Que faut-il pour obtenir un rendez-vous avec la personne faisant ce quiz ?", c: ["Un préavis de trois semaines (et encore)", "Une lettre de recommandation", "Être quelqu'un d'autre", "De la patience, et le jeune cuisinier n°2 en a (stock limité)"], y: "Toutes les réponses sont justes hein..." },
+  { q: "Si les deux jeunes cuisiniers apparaissent devant toi, quelle est la réaction appropriée ?", c: ["Crier", "S'évanouir", "Demander au premier de prendre la photo, puis partir avec le second"], ok: [2], y: "", n: "" },
+  { q: "Vrai ou faux : il y a assez de place sur cette Terre pour deux jeunes cuisiniers.", c: ["Vrai", "Faux"], ok: [1], y: "Faux dsl bb", n: "Faux dsl bb" },
+  { q: "À quel point la personne faisant ce quiz plaît-elle au jeune cuisinier n°2 ?", c: ["Un peu", "Beaucoup", "Au point de se déguiser en cuisinier et de fabriquer un quiz de vingt et une questions", "La réponse ne rentre pas dans la case"], ok: [1, 2, 3], y: "C'est exactement ça.", n: "« Un peu » est très en dessous de la réalité." },
+  { q: "Quelle faute professionnelle grave le jeune cuisinier n°2 a-t-il commise aujourd'hui ?", c: ["Il a raté sa sauce", "Il a oublié de te dire que tu étais belle", "Les deux, mais seule la seconde est impardonnable"], ok: [1, 2], y: "T'ES BELLE AUJOURD'HUI PRINCESSE", n: "T'ES BELLE AUJOURD'HUI PRINCESSE" },
+  { q: "Qui a gagné ce quiz ?", c: ["Le jeune cuisinier n°1", "Le jeune cuisinier n°2"], ok: [1], y: "bonne reponse", n: "n'importe quoi, je perds jamais moi (sauf une fois aux echecs mais c ps ma faute j'ai misclick stp)" },
+  { q: "Le quiz est terminé, le jeune cuisinier n°2 attend ta réponse.", free: true }
+];
+var TOTAL = Q.filter(function (x) { return !x.free; }).length;
+var KEYS = ["A", "B", "C", "D"];
+var S = { i: -1, score: 0, done: false, text: "", a: [] };
+function recalc() {
+  S.score = 0;
+  Q.forEach(function (x, k) {
+    var v = S.a[k];
+    if (x.free || v === undefined || v === null) return;
+    if (!x.ok || x.ok.indexOf(v) !== -1) S.score++;
+  });
+}
+var $ = function (id) { return document.getElementById(id); };
+
+function show(id) {
+  ["intro", "quiz", "end"].forEach(function (s) { $(s).hidden = s !== id; });
+  window.scrollTo(0, 0);
+}
+
+function frame(n, src) {
+  var f = document.createElement("div"); f.className = "frame";
+  var p = document.createElement("div"); p.className = "pic";
+  if (src) {
+    p.classList.add("has");
+    var im = document.createElement("img"); im.src = src; im.alt = "Jeune cuisinier n°" + n; p.appendChild(im);
+  } else {
+    var b = document.createElement("b"); b.textContent = "N°" + n;
+    var s = document.createElement("span"); s.textContent = n === 1 ? "En tournée, photo indisponible" : "Photo indisponible";
+    p.appendChild(b); p.appendChild(s);
+  }
+  var cap = document.createElement("span"); cap.className = "mono"; cap.textContent = n === 1 ? "Le premier" : "Le second";
+  f.appendChild(p); f.appendChild(cap); return f;
+}
+
+function drawDuel() {
+  var duel = $("duel"), ph = PHOTOS[S.i + 1];
+  duel.textContent = "";
+  duel.hidden = !ph;
+  if (ph) { duel.appendChild(frame(1, ph[0])); duel.appendChild(frame(2, ph[1])); }
+}
+
+function probe(n, k, e) {
+  if (e >= EXT.length) return;
+  var src = "photos/qst" + n + "_cuis" + (k + 1) + "." + EXT[e];
+  var im = new Image();
+  im.onload = function () {
+    if (!PHOTOS[n]) PHOTOS[n] = [null, null];
+    PHOTOS[n][k] = src;
+    if (S.i + 1 === n && !$("quiz").hidden) drawDuel();
+  };
+  im.onerror = function () { probe(n, k, e + 1); };
+  im.src = src;
+}
+
+function render() {
+  var item = Q[S.i], n = S.i + 1;
+  S.a[S.i] = null; recalc();
+  $("back").hidden = S.i === 0;
+  $("num").textContent = "Commande " + String(n).padStart(2, "0") + "/" + Q.length;
+  $("pts").textContent = S.score + " pt" + (S.score > 1 ? "s" : "");
+  var bar = $("bar"); bar.textContent = "";
+  Q.forEach(function (_, k) { var d = document.createElement("i"); if (k <= S.i) d.className = "on"; bar.appendChild(d); });
+  $("q").textContent = item.q;
+  drawDuel();
+  var box = $("choices"); box.textContent = "";
+  $("verdict").hidden = true;
+  var next = $("next");
+  if (item.free) {
+    box.hidden = true; $("free").hidden = false;
+    $("answer").value = S.text;
+    next.hidden = false; next.textContent = "Voir l'addition";
+    return;
+  }
+  box.hidden = false; $("free").hidden = true; next.hidden = true;
+  next.textContent = "Question suivante";
+  item.c.forEach(function (label, k) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "choice";
+    var key = document.createElement("span"); key.className = "k"; key.textContent = KEYS[k];
+    var t = document.createElement("span"); t.textContent = label;
+    b.appendChild(key); b.appendChild(t);
+    b.addEventListener("click", function () { pick(k, b); });
+    box.appendChild(b);
+  });
+}
+
+function pick(k, btn) {
+  var item = Q[S.i];
+  var good = !item.ok || item.ok.indexOf(k) !== -1;
+  S.a[S.i] = k; recalc();
+  Array.prototype.forEach.call($("choices").children, function (b) { b.disabled = true; });
+  btn.classList.add("picked", good ? "ok" : "no");
+  $("pts").textContent = S.score + " pt" + (S.score > 1 ? "s" : "");
+  var tag = $("vtag");
+  tag.textContent = good ? "Accordé par le jury" : "Refusé par le jury";
+  tag.className = "tag " + (good ? "ok" : "no");
+  $("vtext").textContent = good ? item.y : item.n;
+  $("vtext").hidden = !(good ? item.y : item.n);
+  $("verdict").hidden = false;
+  $("next").hidden = false;
+  $("next").focus();
+}
+
+function finish() {
+  S.done = true;
+  var s = S.score, title, blurb;
+  if (s <= 7) { title = "Fan loyale"; blurb = "Le jeune cuisinier n°2 conteste les résultats et demande un recomptage."; }
+  else if (s <= 15) { title = "Cœur en balance"; blurb = "Une dégustation s'impose pour départager."; }
+  else { title = "Vraie gourmande certifiée"; blurb = "Récompense à retirer auprès du jeune cuisinier n°2, en personne."; }
+  $("score").textContent = s + "/" + TOTAL;
+  $("title").textContent = title;
+  $("blurb").textContent = blurb;
+  var reply = S.text.trim() || "(pas encore de réponse, il attend)";
+  $("recap").textContent = "Quiz d'une vraie gourmande : " + s + "/" + TOTAL + ", « " + title + " ».\nMa réponse au jeune cuisinier n°2 : " + reply;
+  $("copied").textContent = "";
+  S.base = $("recap").textContent; buildPerfs();
+  show("end");
+}
+
+var PERFS = ["Pompes avec la quizzeuse sur le dos", "Solo de guitare", "Repas cuisiné", "Performance de chant", "Lap dance", "Autre requête (toutes acceptées)"];
+function buildPerfs() {
+  var box = $("perfs"); box.textContent = "";
+  PERFS.forEach(function (p) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = p;
+    b.setAttribute("aria-pressed", S.perf === p ? "true" : "false");
+    b.addEventListener("click", function () { S.perf = S.perf === p ? "" : p; buildPerfs(); });
+    box.appendChild(b);
+  });
+  $("recap").textContent = S.base + (S.perf ? "\nPerformance choisie : " + S.perf : "");
+}
+
+$("start").addEventListener("click", function () { S.i = 0; S.score = 0; S.done = false; S.text = ""; S.a = []; S.perf = ""; show("quiz"); render(); });
+$("next").addEventListener("click", function () {
+  if (Q[S.i].free) { S.text = $("answer").value; finish(); return; }
+  S.i++; render(); window.scrollTo(0, 0);
+});
+$("back").addEventListener("click", function () { if (S.i > 0) { S.i--; render(); window.scrollTo(0, 0); } });
+$("answer").addEventListener("input", function () { S.text = $("answer").value; });
+$("again").addEventListener("click", function () { S = { i: -1, score: 0, done: false, text: "", a: [] }; show("intro"); });
+$("copy").addEventListener("click", function () {
+  var text = $("recap").textContent, out = $("copied");
+  function fallback() {
+    var r = document.createRange(); r.selectNodeContents($("recap"));
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    out.textContent = "Texte sélectionné, copie-le";
+  }
+  try {
+    navigator.clipboard.writeText(text).then(function () { out.textContent = "Copié"; }, fallback);
+  } catch (e) { fallback(); }
+});
+
+function start(data) {
+  if (data && typeof data.i === "number" && data.i >= 0) {
+    S = { i: data.i, score: data.score || 0, done: !!data.done, text: data.text || "", a: data.a || [] };
+    if (S.done) finish(); else { show("quiz"); render(); }
+  }
+}
+for (var qn = 1; qn <= Q.length; qn++) { probe(qn, 0, 0); probe(qn, 1, 0); }
+var hot = window.claude && window.claude.hot;
+if (hot && hot.snapshot) hot.snapshot(function () { return S; });
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+</script>
+
+</body>
+</html>
